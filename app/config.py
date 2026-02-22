@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     ollama_timeout: int = 120
 
     retrieval_top_k: int = 5
+    rerank_enabled: bool = False
+    rerank_initial_k: int = 20
+    reranker_type: str = "keyword"
 
     chunk_size: int = 512
     chunk_overlap: int = 50
