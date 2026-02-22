@@ -2,20 +2,30 @@ import logging
 from pathlib import Path
 
 from app.config import settings
+from core.chunking.paragraph_chunker import ParagraphChunker
 from core.chunking.smart_chunker import SmartChunker
 from ingestion.loaders import discover_files, load_file
 
 logger = logging.getLogger(__name__)
 
 
+def _get_chunker():
+    if settings.chunker_type == "paragraph":
+        return ParagraphChunker(
+            chunk_size=settings.chunk_size,
+            overlap=settings.chunk_overlap,
+        )
+    return SmartChunker(
+        chunk_size=settings.chunk_size,
+        overlap=settings.chunk_overlap,
+    )
+
+
 class IngestionPipeline:
     def __init__(self, embedding, vector_store):
         self.embedding = embedding
         self.vector_store = vector_store
-        self.chunker = SmartChunker(
-            chunk_size=settings.chunk_size,
-            overlap=settings.chunk_overlap,
-        )
+        self.chunker = _get_chunker()
 
     async def run(self, source: Path) -> int:
         if not source.exists():

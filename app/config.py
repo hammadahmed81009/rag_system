@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     chunk_overlap: int = 50
     ingest_batch_size: int = 32
     ingest_root: str = ""
+    chunker_type: str = "smart"
 
     class Config:
         env_prefix = ""
