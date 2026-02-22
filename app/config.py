@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     ingest_root: str = ""
     chunker_type: str = "smart"
 
+    api_key: str = ""
+    rate_limit_per_minute: int = 0
+
     class Config:
         env_prefix = ""
         env_file = ".env"

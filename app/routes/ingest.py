@@ -1,9 +1,10 @@
 import logging
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
+from app.auth import check_rate_limit, require_api_key
 from app.config import settings
 from app.dependencies import embedding, vector_store
 from ingestion.pipeline import IngestionPipeline
@@ -17,7 +18,12 @@ class IngestRequest(BaseModel):
 
 
 @router.post("/")
-async def ingest(request: Request, body: IngestRequest):
+async def ingest(
+    request: Request,
+    body: IngestRequest,
+    _auth: None = Depends(require_api_key),
+    _rate: None = Depends(check_rate_limit),
+):
     source = Path(body.path).resolve()
     if not source.exists():
         raise HTTPException(status_code=404, detail=f"Path not found: {body.path}")
