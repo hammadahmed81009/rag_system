@@ -1,6 +1,6 @@
 # RAG API
 
-Retrieval-augmented generation API: ingest documents, query with natural language, get answers grounded in your data. Self-hosted stack (Qdrant, sentence-transformers, Ollama).
+Retrieval-augmented generation API: ingest documents, query with natural language, get answers grounded in your data. Self-hosted stack (Qdrant, sentence-transformers or optional OpenAI embeddings, Ollama).
 
 ## Requirements
 
@@ -81,14 +81,30 @@ With test cases in `evaluation/test_queries.py` and documents indexed:
 python scripts/run_evaluation.py
 ```
 
-Prints Recall@k and per-query hit/miss.
+Prints **Recall@k**, per-query hit/miss, and **retrieval latency** (p50 and p95 in ms). Add or edit cases in `evaluation/test_queries.py` to evaluate your own queries.
+
+## Testing
+
+Unit tests use pytest (and pytest-asyncio for async tests):
+
+```bash
+pip install -r requirements.txt
+pytest tests/ -v
+```
+
+- **tests/test_chunking.py** – SmartChunker and ParagraphChunker (empty input, chunk count, metadata).
+- **tests/test_pipeline.py** – Ingestion pipeline with mocked embedding and vector store (ingest file, nonexistent path, empty folder).
+- **tests/test_retrieval.py** – VectorRetriever with mocked embedding and store.
 
 ## Configuration
 
 See `.env.example`. Main options:
 
 - **Qdrant:** `QDRANT_HOST`, `QDRANT_PORT`, `QDRANT_COLLECTION`
-- **Embeddings:** `EMBEDDING_MODEL_NAME`, `EMBEDDING_DIM` (must match model, e.g. 384 for bge-small-en)
+- **Embeddings:**  
+  - `EMBEDDING_PROVIDER`: `local` (sentence-transformers) or `openai`.  
+  - **Local:** `EMBEDDING_MODEL_NAME`, `EMBEDDING_DIM` (e.g. 384 for bge-small-en).  
+  - **OpenAI:** set `OPENAI_API_KEY` and `OPENAI_EMBEDDING_MODEL` (e.g. `text-embedding-3-small`); set `EMBEDDING_DIM` to match the model (e.g. 1536 for text-embedding-3-small).
 - **Ollama:** `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, `OLLAMA_TIMEOUT`
 - **Retrieval:** `RETRIEVAL_TOP_K`
 - **Reranker:** `RERANK_ENABLED`, `RERANK_INITIAL_K`, `RERANKER_TYPE` (keyword | bm25)
@@ -97,8 +113,9 @@ See `.env.example`. Main options:
 ## Project layout
 
 - `app/` – FastAPI app, config, routes (query, ingest, health)
-- `core/` – RAG logic: retrievers, embeddings, LLM, chunking, prompts, reranker
+- `core/` – RAG logic: retrievers, embeddings (local + optional OpenAI), LLM, chunking, prompts, reranker
 - `db/` – Vector store (Qdrant) abstraction
 - `ingestion/` – Loaders, pipeline, chunking
-- `evaluation/` – Test queries, recall metrics
+- `evaluation/` – Test queries, recall and latency metrics
 - `scripts/` – CLI: ingest_folder, rebuild_index, run_evaluation
+- `tests/` – Unit tests (chunking, pipeline, retrieval)

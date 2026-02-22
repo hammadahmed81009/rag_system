@@ -9,8 +9,11 @@ class Settings(BaseSettings):
     qdrant_port: int = 6333
     qdrant_collection: str = "rag_collection"
 
+    embedding_provider: str = "local"
     embedding_model_name: str = "BAAI/bge-small-en"
     embedding_dim: int = 384
+    openai_api_key: str = ""
+    openai_embedding_model: str = "text-embedding-3-small"
 
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "mistral"

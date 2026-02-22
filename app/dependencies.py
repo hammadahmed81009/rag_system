@@ -1,5 +1,6 @@
 from app.config import settings
 from core.embeddings.local import LocalEmbedding
+from core.embeddings.openai import OpenAIEmbedding
 from core.retriever.vector import VectorRetriever
 from core.retriever.reranker import BM25Reranker, KeywordReranker, RerankingRetriever
 from core.llm.ollama import OllamaLLM
@@ -7,7 +8,14 @@ from db.vector.qdrant import QdrantVectorStore
 from core.rag_service import RAGService
 from qdrant_client.http.exceptions import UnexpectedResponse
 
-embedding = LocalEmbedding(model_name=settings.embedding_model_name)
+if settings.embedding_provider == "openai":
+    embedding = OpenAIEmbedding(
+        model=settings.openai_embedding_model,
+        api_key=settings.openai_api_key or None,
+    )
+else:
+    embedding = LocalEmbedding(model_name=settings.embedding_model_name)
+
 vector_store = QdrantVectorStore(
     collection_name=settings.qdrant_collection,
     host=settings.qdrant_host,
