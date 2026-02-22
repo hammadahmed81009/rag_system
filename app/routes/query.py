@@ -1,8 +1,11 @@
-from fastapi import APIRouter
+import logging
+
+from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
 from app.dependencies import rag_service
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/query", tags=["query"])
 
 
@@ -22,8 +25,10 @@ class QueryResponse(BaseModel):
 
 
 @router.post("/", response_model=QueryResponse)
-async def query(body: QueryRequest):
+async def query(request: Request, body: QueryRequest):
     result = await rag_service.answer(body.query)
+    request_id = getattr(request.state, "request_id", "")
+    logger.info("request_id=%s query_len=%d sources_count=%d", request_id, len(body.query), len(result["sources"]))
     sources = [
         SourceResponse(
             text=doc.payload.get("text", ""),
