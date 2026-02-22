@@ -14,9 +14,14 @@ class Settings(BaseSettings):
 
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "mistral"
-    ollama_timeout: int = 10
+    ollama_timeout: int = 120
 
     retrieval_top_k: int = 5
+
+    chunk_size: int = 512
+    chunk_overlap: int = 50
+    ingest_batch_size: int = 32
+    ingest_root: str = ""
 
     class Config:
         env_prefix = ""
